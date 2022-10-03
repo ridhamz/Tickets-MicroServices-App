@@ -17,12 +17,12 @@ app.use(signInRouter);
 app.use(signUpRouter);
 app.use(signOutRouter);
 
-// error handler
-app.use(errorHandler);
-
 // handle not found routes
 app.get('*', () => {
   throw new NotFoundError();
 });
+
+// error handler
+app.use(errorHandler);
 
 app.listen(5000, () => console.log('Listening on PORT 5000 '));
