@@ -4,7 +4,7 @@ import { body, validationResult } from 'express-validator';
 import { DatabaseConnectionError } from '../errors/database-connection-error';
 import { RequestValidationError } from '../errors/request-validation-error';
 import { User } from '../models/user';
-import { Password } from '../utils/password';
+import jwt from 'jsonwebtoken';
 
 const router = express.Router();
 
@@ -42,10 +42,18 @@ router.post(
     // save the user in the data base
     await user.save();
 
-    res.status(201).send({
-      message: 'User created',
-      user,
-    });
+    // generate JWT
+    const token = await jwt.sign(
+      {
+        id: user._id,
+        email: user.email,
+      },
+      process.env.JWT_KEY!
+    );
+
+    req.session = { jwt: token };
+
+    res.status(201).send(user);
   }
 );
 
