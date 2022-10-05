@@ -5,6 +5,7 @@ import { BadRequestError } from '../errors/bad-request-error';
 import { RequestValidationError } from '../errors/request-validation-error';
 import { User } from '../models/user';
 import { Password } from '../utils/password';
+import { validateRequest } from '../middlewares/validate-request';
 
 const router = express.Router();
 
@@ -19,13 +20,8 @@ const validateParams = () => [
 router.post(
   '/api/users/signin',
   validateParams(),
+  validateRequest,
   async (req: Request, res: Response) => {
-    // handle errors
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-      throw new RequestValidationError(errors.array());
-    }
-
     const { email, password } = req.body;
 
     // check if the user email already exists
@@ -48,7 +44,7 @@ router.post(
 
     req.session = { jwt: token };
 
-    res.status(201).send(user);
+    res.status(200).send(user);
   }
 );
 

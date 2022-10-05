@@ -5,6 +5,7 @@ import { DatabaseConnectionError } from '../errors/database-connection-error';
 import { RequestValidationError } from '../errors/request-validation-error';
 import { User } from '../models/user';
 import jwt from 'jsonwebtoken';
+import { validateRequest } from '../middlewares/validate-request';
 
 const router = express.Router();
 
@@ -19,12 +20,8 @@ const validateParams = () => [
 router.post(
   '/api/users/signup',
   validateParams(),
+  validateRequest,
   async (req: Request, res: Response) => {
-    // handle errors
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-      throw new RequestValidationError(errors.array());
-    }
     const { email, password } = req.body;
 
     // check if the user email already exists
