@@ -1,6 +1,5 @@
 import express, { Response, Request } from 'express';
-import { currentUser } from '../../../common/src/middlewares/current-user';
-import { requireAuth } from '../../../common/src/middlewares/require-auth';
+import { currentUser } from 'mz-tools';
 
 const router = express.Router();
 
