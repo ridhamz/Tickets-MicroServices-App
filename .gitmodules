@@ -1,0 +1,3 @@
+[submodule "mz-tools"]
+	path = mz-tools
+	url = https://github.com/ridhamz/mz-tools.git
