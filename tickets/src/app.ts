@@ -5,6 +5,7 @@ import cookieSession from 'cookie-session';
 
 import { errorHandler } from 'mz-tools';
 import { NotFoundError } from 'mz-tools';
+import { createTicketRouter } from './routes/new';
 
 const app = express();
 app.use(express.json());
@@ -20,7 +21,7 @@ app.use(
 );
 
 //routes
-
+app.use(createTicketRouter);
 
 // handle not found routes
 app.all('*', async (req, res, next) => {
