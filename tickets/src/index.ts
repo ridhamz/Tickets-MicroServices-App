@@ -13,7 +13,7 @@ async function start() {
   }
 }
 
-app.listen(5000, () => {
+app.listen(5001, () => {
   start();
   console.log('Tickets service: listening on PORT 5001 ');
 });

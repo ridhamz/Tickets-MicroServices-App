@@ -6,9 +6,9 @@ import { Ticket } from '../models/ticket';
 
 const router = express.Router();
 
-const stan = nats.connect('ticketing', 'tickets', {
-  url: 'http://nats-srv:4222',
-});
+// const stan = nats.connect('ticketing', 'tickets', {
+//   url: 'http://nats-srv:4222',
+// });
 
 router.post(
   '/api/tickets',
@@ -34,9 +34,9 @@ router.post(
       type: 'ticket:created',
       data: ticket,
     };
-    stan.publish('ticket:created', JSON.stringify(event), () => {
-      console.log('Ticket creation event published');
-    });
+    // stan.publish('ticket:created', JSON.stringify(event), () => {
+    //   console.log('Ticket creation event published');
+    // });
 
     res.status(201).send(ticket);
   }
