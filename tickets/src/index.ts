@@ -6,7 +6,7 @@ async function start() {
     throw new Error('JWT_KEY must be defined');
   }
   try {
-    await mongoose.connect('mongodb://auth-mongo-srv:27017/auth');
+    await mongoose.connect('mongodb://tickets-mongo-srv:27017/tickets');
     console.log('connected to the database');
   } catch (error) {
     console.error(error);
@@ -15,5 +15,5 @@ async function start() {
 
 app.listen(5000, () => {
   start();
-  console.log('Auth service: listening on PORT 5000 ');
+  console.log('Tickets service: listening on PORT 5001 ');
 });
