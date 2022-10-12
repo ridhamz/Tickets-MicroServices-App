@@ -33,9 +33,9 @@ router.post(
     if (!passwordMatched)
       throw new BadRequestError('incorrect email or password!!!');
     // generate JWT
-    const token = await jwt.sign(
+    const token = jwt.sign(
       {
-        id: user._id,
+        id: user.id,
         email: user.email,
       },
       process.env.JWT_KEY!

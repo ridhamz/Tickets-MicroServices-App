@@ -29,6 +29,6 @@ describe('Show ticket by id', () => {
       .set('Cookie', global.signin())
       .send();
     expect(ticket.body.title).toEqual('ticket 1');
-    expect(ticket.body.price).toEqual(20);
+    expect(ticket.body.price).toEqual(200);
   });
 });

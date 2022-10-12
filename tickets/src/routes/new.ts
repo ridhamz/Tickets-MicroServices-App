@@ -1,7 +1,8 @@
 import express, { Request, Response } from 'express';
 import { body } from 'express-validator';
 import nats from 'node-nats-streaming';
-import { requireAuth, Subjects, validateRequest } from 'mz-tools';
+import { Subjects, validateRequest, currentUser, requireAuth } from 'mz-tools';
+
 import { Ticket } from '../models/ticket';
 import { TicketCreatedPublisher } from '../../events/publishers/ticket-created-publisher';
 import { natsWrapper } from '../nats-wrapper';
@@ -10,6 +11,7 @@ const router = express.Router();
 
 router.post(
   '/api/tickets',
+  currentUser,
   requireAuth,
   [
     body('title').not().isEmpty().withMessage('Title is required'),
@@ -24,7 +26,7 @@ router.post(
     const ticket = Ticket.build({
       title,
       price,
-      userId: req.currentUser!.id,
+      userId: req.currentUser.id,
     });
     await ticket.save();
 
@@ -40,7 +42,7 @@ router.post(
 
     // publish the create ticket event
     // @ts-ignore
-    new TicketCreatedPublisher(natsWrapper.client).publish(event);
+    await new TicketCreatedPublisher(natsWrapper.client).publish(event);
     res.status(201).send(ticket);
   }
 );
