@@ -5,10 +5,10 @@ import cookieSession from 'cookie-session';
 
 import { errorHandler } from 'mz-tools';
 import { NotFoundError } from 'mz-tools';
-import { createTicketRouter } from './routes/new';
-import { showTicketRouter } from './routes/show';
-import { indexTicketRouter } from './routes';
-import { updateTicketRouter } from './routes/update';
+import { createOrderRouter } from './routes/new';
+import { showOrderRouter } from './routes/show';
+import { indexOrdersRouter } from './routes';
+import { deleteOrderRouter } from './routes/delete';
 
 const app = express();
 app.use(express.json());
@@ -24,10 +24,10 @@ app.use(
 );
 
 //routes
-app.use(indexTicketRouter);
-app.use(createTicketRouter);
-app.use(showTicketRouter);
-app.use(updateTicketRouter);
+app.use(indexOrdersRouter);
+app.use(createOrderRouter);
+app.use(showOrderRouter);
+app.use(deleteOrderRouter);
 
 // handle not found routes
 app.all('*', async (req, res, next) => {
