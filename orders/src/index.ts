@@ -1,6 +1,8 @@
 import { app } from './app';
 import mongoose from 'mongoose';
 import { natsWrapper } from './nats-wrapper';
+import { TicketCreatedListener } from './events/listeners/ticket-created-listener';
+import { TicketUpdatedListener } from './events/listeners/ticket-update-listener';
 
 async function start() {
   if (!process.env.JWT_KEY) {
@@ -33,6 +35,10 @@ async function start() {
 
     process.on('SIGINT', () => natsWrapper.client.close());
     process.on('SIGTERM', () => natsWrapper.client.close());
+
+    new TicketCreatedListener(natsWrapper.client).listen();
+
+    new TicketUpdatedListener(natsWrapper.client).listen();
 
     await mongoose.connect('mongodb://orders-mongo-srv:27017/orders');
     console.log('connected to the database');

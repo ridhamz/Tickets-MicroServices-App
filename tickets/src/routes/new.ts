@@ -31,13 +31,10 @@ router.post(
     await ticket.save();
 
     const event = {
-      subject: Subjects.TicketCreated,
-      data: {
-        id: ticket.id,
-        title: ticket.title,
-        price: ticket.price,
-        userId: ticket.userId,
-      },
+      id: ticket.id,
+      title: ticket.title,
+      price: ticket.price,
+      userId: ticket.userId,
     };
 
     // publish the create ticket event
