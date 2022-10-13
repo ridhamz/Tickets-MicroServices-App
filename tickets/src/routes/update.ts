@@ -7,7 +7,7 @@ import {
   currentUser,
   NotAuthorizedError,
 } from 'mz-tools';
-import { TicketUpdatedPublisher } from '../../events/publishers/ticket-updated-publisher';
+import { TicketUpdatedPublisher } from '../events/publishers/ticket-updated-publisher';
 import { Ticket } from '../models/ticket';
 import { natsWrapper } from '../nats-wrapper';
 
