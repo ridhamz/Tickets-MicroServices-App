@@ -1,3 +1,4 @@
+import { OrderCancelledPublisher } from './../events/publishers/order-cancelled-publisher';
 import express, { Request, Response } from 'express';
 import {
   validateRequest,
@@ -18,7 +19,7 @@ router.delete(
   async (req: Request, res: Response) => {
     const { id } = req.params;
 
-    const order = await Order.findById(id);
+    const order = await Order.findById(id).populate('ticket');
 
     if (!order) {
       throw new NotFoundError();
@@ -30,7 +31,12 @@ router.delete(
     await order.save();
 
     // publishing an event saying this was cancelled!
-
+    new OrderCancelledPublisher(natsWrapper.client).publish({
+      id: id,
+      ticket: {
+        id: order.ticket.id,
+      },
+    });
     res.status(204).send(order);
   }
 );
