@@ -1,48 +1,59 @@
 import express, { Request, Response } from 'express';
 import { body } from 'express-validator';
-import nats from 'node-nats-streaming';
-import { Subjects, validateRequest, currentUser, requireAuth } from 'mz-tools';
-
-import { Ticket } from '../models/ticket';
-import { TicketCreatedPublisher } from '../events/publishers/ticket-created-publisher';
+import {
+  requireAuth,
+  validateRequest,
+  BadRequestError,
+  NotAuthorizedError,
+  NotFoundError,
+  OrderStatus,
+} from 'mz-tools';
+import { stripe } from '../stripe';
+import { Order } from '../models/order';
+import { Payment } from '../models/payment';
+import { PaymentCreatedPublisher } from '../events/publishers/payment-created-publisher';
 import { natsWrapper } from '../nats-wrapper';
 
 const router = express.Router();
 
 router.post(
-  '/api/tickets',
-  currentUser,
+  '/api/payments',
   requireAuth,
-  [
-    body('title').not().isEmpty().withMessage('Title is required'),
-    body('price')
-      .isFloat({ gt: 0 })
-      .withMessage('Price must be greater than 0'),
-  ],
+  [body('token').not().isEmpty(), body('orderId').not().isEmpty()],
   validateRequest,
   async (req: Request, res: Response) => {
-    const { title, price } = req.body;
+    const { token, orderId } = req.body;
 
-    const ticket = Ticket.build({
-      title,
-      price,
-      userId: req.currentUser.id,
+    const order = await Order.findById(orderId);
+
+    if (!order) {
+      throw new NotFoundError();
+    }
+    if (order.userId !== req.currentUser!.id) {
+      throw new NotAuthorizedError();
+    }
+    if (order.status === OrderStatus.Cancelled) {
+      throw new BadRequestError('Cannot pay for an cancelled order');
+    }
+
+    const charge = await stripe.charges.create({
+      currency: 'usd',
+      amount: order.price * 100,
+      source: token,
     });
-    await ticket.save();
+    const payment = Payment.build({
+      orderId,
+      stripeId: charge.id,
+    });
+    await payment.save();
+    new PaymentCreatedPublisher(natsWrapper.client).publish({
+      id: payment.id,
+      orderId: payment.orderId,
+      stripeId: payment.stripeId,
+    });
 
-    const event = {
-      id: ticket.id,
-      title: ticket.title,
-      price: ticket.price,
-      userId: ticket.userId,
-      version: ticket.version,
-    };
-
-    // publish the create ticket event
-    // @ts-ignore
-    await new TicketCreatedPublisher(natsWrapper.client).publish(event);
-    res.status(201).send(ticket);
+    res.status(201).send({ id: payment.id });
   }
 );
 
-export { router as createTicketRouter };
+export { router as createChargeRouter };

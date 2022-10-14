@@ -1,30 +1,25 @@
-import { Listener, OrderCancelledEvent, Subjects } from 'mz-tools';
+import { OrderCancelledEvent, Subjects, Listener, OrderStatus } from 'mz-tools';
 import { Message } from 'node-nats-streaming';
 import { queueGroupName } from './queue-group-name';
-import { Ticket } from '../../models/ticket';
-import { TicketUpdatedPublisher } from '../publishers/ticket-updated-publisher';
+import { Order } from '../../models/order';
 
 export class OrderCancelledListener extends Listener<OrderCancelledEvent> {
   subject: Subjects.OrderCancelled = Subjects.OrderCancelled;
   queueGroupName = queueGroupName;
 
   async onMessage(data: OrderCancelledEvent['data'], msg: Message) {
-    const ticket = await Ticket.findById(data.ticket.id);
+    const order = await Order.findOne({
+      _id: data.id,
+      version: data.version - 1,
+    });
 
-    if (!ticket) {
-      throw new Error('Ticket not found!!!');
+    if (!order) {
+      throw new Error('Order not found');
     }
 
-    ticket.set({ orderId: undefined });
-    await ticket.save();
-    await new TicketUpdatedPublisher(this.client).publish({
-      id: ticket.id,
-      orderId: ticket.orderId,
-      userId: ticket.userId,
-      price: ticket.price,
-      title: ticket.title,
-      version: ticket.version,
-    });
+    order.set({ status: OrderStatus.Cancelled });
+    await order.save();
+
     msg.ack();
   }
 }

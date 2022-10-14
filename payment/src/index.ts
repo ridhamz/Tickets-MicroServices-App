@@ -2,6 +2,7 @@ import { OrderCreatedListener } from './events/listeners/order-created-listener'
 import { app } from './app';
 import mongoose from 'mongoose';
 import { natsWrapper } from './nats-wrapper';
+import { OrderCancelledListener } from './events/listeners/order-cancelled-listener';
 
 async function start() {
   if (!process.env.JWT_KEY) {
@@ -36,7 +37,7 @@ async function start() {
     process.on('SIGTERM', () => natsWrapper.client.close());
 
     new OrderCreatedListener(natsWrapper.client).listen();
-    new OrderCreatedListener(natsWrapper.client).listen();
+    new OrderCancelledListener(natsWrapper.client).listen();
 
     await mongoose.connect('mongodb://payment-mongo-srv:27017/payment');
     console.log('connected to the database');

@@ -1,59 +1,95 @@
+import mongoose from 'mongoose';
 import request from 'supertest';
+import { OrderStatus } from 'mz-tools';
 import { app } from '../../app';
+import { Order } from '../../models/order';
+import { stripe } from '../../stripe';
+import { Payment } from '../../models/payment';
 
-describe('New tickets', () => {
-  it('Has a route handler listening to api/tickets for post request', async () => {
-    const response = await request(app).post('/api/tickets').send();
-    expect(response.status).not.toEqual(404);
+it('returns a 404 when purchasing an order that does not exist', async () => {
+  await request(app)
+    .post('/api/payments')
+    .set('Cookie', global.signin())
+    .send({
+      token: 'asldkfj',
+      orderId: new mongoose.Types.ObjectId().toHexString(),
+    })
+    .expect(404);
+});
+
+it('returns a 401 when purchasing an order that doesnt belong to the user', async () => {
+  const order = Order.build({
+    id: new mongoose.Types.ObjectId().toHexString(),
+    userId: new mongoose.Types.ObjectId().toHexString(),
+    version: 0,
+    price: 20,
+    status: OrderStatus.Created,
+  });
+  await order.save();
+
+  await request(app)
+    .post('/api/payments')
+    .set('Cookie', global.signin())
+    .send({
+      token: 'asldkfj',
+      orderId: order.id,
+    })
+    .expect(401);
+});
+
+it('returns a 400 when purchasing a cancelled order', async () => {
+  const userId = new mongoose.Types.ObjectId().toHexString();
+  const order = Order.build({
+    id: new mongoose.Types.ObjectId().toHexString(),
+    userId,
+    version: 0,
+    price: 20,
+    status: OrderStatus.Cancelled,
+  });
+  await order.save();
+
+  await request(app)
+    .post('/api/payments')
+    .set('Cookie', global.signin(userId))
+    .send({
+      orderId: order.id,
+      token: 'asdlkfj',
+    })
+    .expect(400);
+});
+
+it('returns a 201 with valid inputs', async () => {
+  const userId = new mongoose.Types.ObjectId().toHexString();
+  const price = Math.floor(Math.random() * 100000);
+  const order = Order.build({
+    id: new mongoose.Types.ObjectId().toHexString(),
+    userId,
+    version: 0,
+    price,
+    status: OrderStatus.Created,
+  });
+  await order.save();
+
+  await request(app)
+    .post('/api/payments')
+    .set('Cookie', global.signin(userId))
+    .send({
+      token: 'tok_visa',
+      orderId: order.id,
+    })
+    .expect(201);
+
+  const stripeCharges = await stripe.charges.list({ limit: 50 });
+  const stripeCharge = stripeCharges.data.find((charge) => {
+    return charge.amount === price * 100;
   });
 
-  it('Only can be accessed if the user signin', async () => {
-    const response = await request(app).post('/api/tickets').send({});
-    expect(response.status).toEqual(401);
-  });
+  expect(stripeCharge).toBeDefined();
+  expect(stripeCharge!.currency).toEqual('usd');
 
-  it('Returns a status different to 401 if the user is signin', async () => {
-    const cookie = global.signin();
-    const response = await request(app)
-      .post('/api/tickets')
-      .set('Cookie', cookie)
-      .send({});
-    expect(response.status).not.toEqual(401);
+  const payment = await Payment.findOne({
+    orderId: order.id,
+    stripeId: stripeCharge!.id,
   });
-
-  it('Returns an error if an invalid title is provided', async () => {
-    const cookie = global.signin();
-    const response = await request(app)
-      .post('/api/tickets')
-      .set('Cookie', cookie)
-      .send({
-        title: '',
-        price: 123,
-      });
-    expect(response.status).toEqual(400);
-  });
-
-  it('Returns an error if an invalid price is provided', async () => {
-    const cookie = global.signin();
-    const response = await request(app)
-      .post('/api/tickets')
-      .set('Cookie', cookie)
-      .send({
-        title: 'ticket',
-        price: null,
-      });
-    expect(response.status).toEqual(400);
-  });
-
-  it('Creates a ticket with valid inputs', async () => {
-    const cookie = global.signin();
-    const response = await request(app)
-      .post('/api/tickets')
-      .set('Cookie', cookie)
-      .send({
-        title: 'test',
-        price: 123,
-      });
-    expect(response.status).toEqual(201);
-  });
+  expect(payment).not.toBeNull();
 });

@@ -1,27 +1,27 @@
 import mongoose from 'mongoose';
 import { Message } from 'node-nats-streaming';
-import { OrderCancelledEvent } from 'mz-tools';
-import { natsWrapper } from '../../../nats-wrapper';
+import { OrderStatus, OrderCancelledEvent } from 'mz-tools';
 import { OrderCancelledListener } from '../order-cancelled-listener';
-import { Ticket } from '../../../models/ticket';
+import { natsWrapper } from '../../../nats-wrapper';
+import { Order } from '../../../models/order';
 
 const setup = async () => {
   const listener = new OrderCancelledListener(natsWrapper.client);
 
-  const orderId = new mongoose.Types.ObjectId().toHexString();
-  const ticket = Ticket.build({
-    title: 'concert',
-    price: 20,
-    userId: 'asdf',
+  const order = Order.build({
+    id: new mongoose.Types.ObjectId().toHexString(),
+    status: OrderStatus.Created,
+    price: 10,
+    userId: 'asldkfj',
+    version: 0,
   });
-  ticket.set({ orderId });
-  await ticket.save();
+  await order.save();
 
   const data: OrderCancelledEvent['data'] = {
-    id: orderId,
-    version: 0,
+    id: order.id,
+    version: 1,
     ticket: {
-      id: ticket.id,
+      id: 'asldkfj',
     },
   };
 
@@ -30,18 +30,25 @@ const setup = async () => {
     ack: jest.fn(),
   };
 
-  return { msg, data, ticket, orderId, listener };
+  return { listener, data, msg, order };
 };
 
-describe('order Cancelled Listener', () => {
-  it('updates the ticket, publishes an event, and acks the message', async () => {
-    const { msg, data, ticket, orderId, listener } = await setup();
+describe('Order Cancelled Listener', () => {
+  it('updates the status of the order', async () => {
+    const { listener, data, msg, order } = await setup();
 
     await listener.onMessage(data, msg);
 
-    const updatedTicket = await Ticket.findById(ticket.id);
-    expect(updatedTicket!.orderId).not.toBeDefined();
+    const updatedOrder = await Order.findById(order.id);
+
+    expect(updatedOrder!.status).toEqual(OrderStatus.Cancelled);
+  });
+
+  it('acks the message', async () => {
+    const { listener, data, msg, order } = await setup();
+
+    await listener.onMessage(data, msg);
+
     expect(msg.ack).toHaveBeenCalled();
-    expect(natsWrapper.client.publish).toHaveBeenCalled();
   });
 });
