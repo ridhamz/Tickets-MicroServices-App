@@ -22,6 +22,12 @@ skaffold dev
 
 ![skaffold](https://github.com/ridhamz/Tickets-MicroServices-App/blob/main/skaffold.png)
 
+### Publish and Receive events using Nats Streaming Server:
+
+NATS Streaming is a data streaming framework powered by NATS. It is an open-source messaging system written in Go programming language. 
+
+![skaffold](https://github.com/ridhamz/Tickets-MicroServices-App/blob/main/publish-event.png)
+
 ### Client service
 NextJS application that provides several ui interfaces with all front-end logic.
 
