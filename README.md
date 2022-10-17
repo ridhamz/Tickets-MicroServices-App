@@ -3,10 +3,10 @@
 # Tickets Microservices Application
 
 
-Buy and Sell tickets application based on microservice architecture pattern using Nodejs, ExpressJS , NextJS, Nats Streaming server as broker, 
+Buy and Sell tickets is an application based on microservice architecture pattern using Nodejs, ExpressJS , NextJS, Nats Streaming server as broker, 
 Kubernetes, Docker, Jest, github actions and skaffold..
 
-## Services
+## Infrastructure
 
 By now, the functional services are still decomposed into 6 core services. Each of them can be tested, built, and deployed independently.
 
@@ -82,7 +82,7 @@ Provides several API create a payment based on Stripe API.
 
 
 ### Expiration service
-This service responsible only for watching active orders it publish an event when a psecific order is expired.
+This service is only responsible for watching active orders it publish an event when a psecific order is expired.
 
 
 
