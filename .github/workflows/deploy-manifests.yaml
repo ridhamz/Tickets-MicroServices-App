@@ -16,4 +16,4 @@ jobs:
          with:
            token: ${{decretes.DIGITALOCEAN_ACCESS_TOKEN}}
        - run: dctl kubernetes cluster kubeconfig save ticketsApp
-       - run : kubectl apply -f infra/k8s 
+       - run : kubectl apply -f infra/k8s && kubectl apply -f infra/k8s-prod
