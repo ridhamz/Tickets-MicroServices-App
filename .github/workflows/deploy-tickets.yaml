@@ -1,0 +1,25 @@
+name: deploy-tickets
+
+on:
+  push:
+    branches:
+      - master
+    paths:
+      - 'tickets/**'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - run: cd tickets && docker build -t ridhamezrigui/tickets .
+      - run: docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD
+        env:
+          DOCKER_USERNAME: ${{secretes.DOCKER_USERNAME}}
+          DOCKER_PASSWORD: ${{secretes.DOCKER_PASSWORD}}
+      - run: docker push ridhamezrigui/tickets
+      - uses: digitalocean/action-doctl@v2
+        with:
+          token: ${{decretes.DIGITALOCEAN_ACCESS_TOKEN}}
+      - run: dctl kubernetes cluster kubeconfig save ticketsApp
+      - run: kubectl rollout restart deployment tickets-depl
