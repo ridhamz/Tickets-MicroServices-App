@@ -3,7 +3,7 @@
 # Tickets Microservices Application
 
 
-Sell and Bay tickets is an application based on microservice architecture pattern using Nodejs, ExpressJS , NextJS, Nats Streaming server as broker, 
+A full stack application powered by the microservice architecture pattern using Nodejs, ExpressJS , NextJS, Nats Streaming server as broker, 
 Kubernetes, Docker, Jest, github actions and skaffold..
 
 ## Infrastructure
