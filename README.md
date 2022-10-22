@@ -3,8 +3,8 @@
 # Tickets Microservices Application
 
 
-A full stack application powered by the microservice architecture pattern using Nodejs, ExpressJS , NextJS, Nats Streaming server as broker, 
-Kubernetes, Docker, Jest, github actions and skaffold..
+A full stack application powered by the microservice architecture pattern using Nodejs, ExpressJS ,TypeScript, NextJS, Nats Streaming server as broker, 
+Kubernetes, Docker, Jest, github actions and skaffold.
 
 ## Infrastructure
 
