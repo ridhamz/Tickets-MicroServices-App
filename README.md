@@ -1,12 +1,12 @@
-[![Build Status](https://travis-ci.org/imrenagi/microservice-skeleton.svg?branch=master)](https://travis-ci.org/imrenagi/microservice-skeleton)  [![codecov](https://codecov.io/gh/imrenagi/microservice-skeleton/branch/master/graph/badge.svg)](https://codecov.io/gh/imrenagi/microservice-skeleton) [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT) 
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT) 
 
 # Tickets Microservices Application
 
 
-Buy and Sell tickets application based on microservice architecture pattern using Nodejs, ExpressJS , NextJS, Nats Streaming server as broker, 
-Kubernetes, Docker, Jest, github actions and skaffold..
+A full stack application powered by the microservice architecture pattern using Nodejs, ExpressJS ,TypeScript, NextJS, Nats Streaming server as broker, 
+Kubernetes, Docker, Jest, github actions and skaffold.
 
-## Services
+## Infrastructure
 
 By now, the functional services are still decomposed into 6 core services. Each of them can be tested, built, and deployed independently.
 
@@ -21,6 +21,12 @@ skaffold dev
 ```
 
 ![skaffold](https://github.com/ridhamz/Tickets-MicroServices-App/blob/main/skaffold.png)
+
+### Publish and Receive events using Nats Streaming Server:
+
+NATS Streaming is a data streaming framework powered by NATS. It is an open-source messaging system written in Go programming language. 
+
+![skaffold](https://github.com/ridhamz/Tickets-MicroServices-App/blob/main/publish-event.png)
 
 ### Client service
 NextJS application that provides several ui interfaces with all front-end logic.
@@ -76,7 +82,7 @@ Provides several API create a payment based on Stripe API.
 
 
 ### Expiration service
-This service responsible only for watching active orders it publish an event when a psecific order is expired.
+This service is only responsible for watching active orders it publish an event when a psecific order is expired.
 
 
 
